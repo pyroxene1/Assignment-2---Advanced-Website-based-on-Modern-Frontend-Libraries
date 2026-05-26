@@ -12,10 +12,11 @@ const userSchema = new mongoose.Schema({
   username: String, email: String, password: String,
   role: { type: String, default: 'user' },
 });
+const cartSchema = new mongoose.Schema({ userId: mongoose.Schema.Types.ObjectId, items: Array });
 const Product = mongoose.model('Product', productSchema);
 const User    = mongoose.model('User', userSchema);
+const Cart    = mongoose.model('Cart', cartSchema);
 
-//  Your original products (unchanged) 
 const products = [
   {
     name: 'Wireless noise-canceling headphones',
@@ -122,6 +123,10 @@ async function seed() {
   await Product.deleteMany({});
   await Product.insertMany(products);
   console.log(` Seeded ${products.length} products`);
+
+  // Clear all carts to avoid orphaned 'Deleted user' records
+  await Cart.deleteMany({});
+  console.log(' Carts cleared');
 
   // Create admin user
   await User.deleteMany({ email: 'admin@shop.com' });

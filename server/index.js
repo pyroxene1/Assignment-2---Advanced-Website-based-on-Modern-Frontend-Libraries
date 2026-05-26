@@ -282,7 +282,9 @@ app.get('/api/admin/carts', authMiddleware, adminOnly, async (req, res) => {
     const carts = await Cart.find()
       .populate('userId', 'username email createdAt role')
       .sort({ updatedAt: -1 });
-    res.json(carts);
+    // Filter out carts whose user has been deleted
+    const validCarts = carts.filter(c => c.userId != null);
+    res.json(validCarts);
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -311,16 +313,14 @@ app.delete('/api/admin/users/:id', authMiddleware, adminOnly, async (req, res) =
 });
 
 //  SPA FALLBACK
-
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
 //  START
-
 mongoose.connect(MONGO_URI)
   .then(() => {
-    console.log('MongoDB connected');
-    app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
+    console.log(' MongoDB connected');
+    app.listen(PORT, () => console.log(` Server running at http://localhost:${PORT}`));
   })
-  .catch(err => { console.error('MongoDB error:', err); process.exit(1); });
+  .catch(err => { console.error(' MongoDB error:', err); process.exit(1); });
